@@ -1,0 +1,106 @@
+
+% !Mode:: "TeX:UTF-8"
+
+
+\chapter{绪论}
+
+在现有工艺条件下制造ADC，要想很好的解决高采样率和低成本的之前的矛盾，最好的办法就是采样现行非常流行的时间交织ADC（TIADC）结构\cite{black1980time}。
+
+所谓TIADC就是由$M$块子ADC并行起来工作，而每块子ADC单独的采样率为$\frac{F_s}{M}$
+。理论上，由M块子ADC组成的TIADC系统采样速率是子ADC采样速率的M倍，并且具有子ADC的采样精度。但是，由于制造工艺的差异，子ADC不可能完全相同，在某些参数上，肯定有些偏差，而这些因素的存在必然会降低TIADC的采样性能。所以失配自然在所难免。研究得最多的主要有以下几种常见的误差：偏置误差、增益误差、时间偏置误差以及带宽失配误差等等。
+\begin{itemize}
+\item 首先，偏置误差出现的原因是因为子ADC有不同的偏置值，同理， 因为存在不同的增益值，所以TIADC一般会存在增益失配。
+\item 其次，对于时间偏置误差来说，因为和理想采样的情况相比，子ADC在采样的时候可能会存在着很小的时间偏差，所以时间偏置并不可免。
+\item 最后，带宽失配的误差原因比较的特殊，它只存在于每个子ADC采样前后的频率响应不同的情况下，比如每块子ADC的截止频率不相同。
+\end{itemize}
+上述的失配误差会产生失配噪声、毛刺信号或者输入信号之间的混叠版本，这些都是超高速ADC的设计和制造的瓶颈所在。正因为如此，对于估计和校准这些算法的研究一直方兴未艾，而同时， 一系列的估计和校准算法也应运而生。下面将简单的将不同的方法进行分门别类。\par
+首先是前台技术。它需要已知的信号，比如标准正弦信号，注入到离线状态下的TIADC系统中。这样可以利用已知的导频测试信号估计出各个通道的失配信息，然后通过综合滤波器组对合路后的输出信号进行重构。因为必须注入到离线平台里面，这种方法适用性有极大的局限性。它不太适合于那种不能停止的系统中，比如通信系统。而实际上，由于温度变化和老化的缘故，估计和校准必须经常进行。所以这种方法主要应用于高端的测量系统中，这些测量用的精密可以经常送检。\par
+与前台技术相反的是后台技术。和前台技术最大的不同在于，失配的估计和校准可以在TIADC正常工作的时候进行，也就是说可以不用打断TIADC的工作进程。这样的后台校准技术可以分为盲自适应校准技术和非盲校准技术。\par
+对于非盲校准技术来说，必须在模拟域进行更多的工作，需要去轻微修改一下模拟域中的输入信号，通过这样的方法来校准失配。比如说，对于偏置误差和增益误差的校准，可以生成一些随机的信号，这样的信号即可以和模拟输入相加，又可以和模拟输入相乘。文献就提供的一种带宽失配误差的校准方法就是通过在TIADC的输入端加上一个已知的正弦信号。\par
+
+
+对于盲自适应校准技术来说，校准方法会相对复杂得多。因为只有实际的输入来作为参考。大多数情况下，对失配误差的盲校准主要在数字域，少数除外。如果对误差的校准都在数字域进行的话，可以归类为全数字域校准。如果校准需要结合模拟前端的反馈的话，可以归类为数模混合校准。
+但是实际上，这两种方法都不可能完全做到盲校准，因为它们一定需要一些输入信号的先验信息，比如输入信号的频谱或者统计特性等等。\par
+\subsection{盲估计技术}
+\subsubsection{偏置失配误差估计}
+偏置失配误差估计的目标是估计出子ADC之间的偏置误差。此时我们定义
+
+利用盲自适应校准技术，通过迭代逼近的方式估计出各个通道的失配信息，然后通过综合滤波器组对合路后的输出信号进行重构。
+
+
+
+
+
+\chapter{非线性}
+\subsection{非线性失配的特征}
+对含有非线性失配误差的TIADC进行建模可以通过如下两种方式：混合滤波器组或者时变滤波器组。相比于时变滤波器表示方式，混合滤波器的表示方式可以更加方便的进行公式的推导和分析非线性误差引起的失配的原因。正如图显示的，TIADC系统中包含了一个模拟分析滤波器组、M片子ADC、M个上采样器以及一个数字综合滤波器组。TIADC系统总体的采样率为$f_s$，因此采样周期为$T_s=1/f_s$。对每一个子ADC来说，采样率为$f_s/M$。
+\par
+假设模拟的输入信号的频率为$x_a(t)$，而且受限于奈奎斯特采样频率。所以输入信号的连续时间傅里叶变换（CTFT）可以表示为
+\begin{equation}
+	X_a(j\omega)=0,\left| \omega \right|\geq=\pi/T_s
+\end{equation}
+我们使用了一组L阶的多项式来表示这种多变的传输曲线。也就是说，每个通道的传输曲线可以通过L阶的多项式来进行建模。偏置误差和增益误差分别可用0阶和一阶多项式来进行标识。
+
+\subsection{TIADC中的非线性误差的分析}
+为了计算TIADC的包含非线性失配的输出，可以使用混合滤波器组(HFB)的结构。首先在信号路径中加入$F_m( . )$。如图所示的是第m个通道的非线性HFB表示。
+分析滤波器
+\begin{equation}
+\label{equ:Hm}
+H_m(j\Omega)={e^{j\Omega {T_s}m}}{e^{ - j\Omega \Delta {t_m}}}
+\end{equation}
+
+在公式中（\ref{equ:Hm}）中$e^{-j\Omega \Delta {t_m}}$这个表达式将采样和保持电路的时间偏置误差考虑在内。
+对于综合滤波器来说，其表达式为
+\begin{equation}
+	G_m(e^{j\Omega T_s})=e^{-j\Omega m} | _{\omega =\Omega T_s} = e^{-j\Omega T_s m}
+\end{equation}
+
+
+
+于是输出表达式可以写做
+\begin{equation}
+\label{equ:}
+	Y\left(e^{j\Omega T_s}\right)=\sum_{m=0}^{M-1} Y_m\left(e^{j\Omega T_s}\right)=\sum_{m=0}^{M-1}e^{-j\Omega T_s m}{\tilde X_m(j\Omega M)}
+\end{equation}
+其中$\tilde X_m$表示是采样输入信号的非线性部分$F_m(.)$的输出
+
+ADC采样输出后的频谱为
+\begin{equation}
+{X_m}\left( {j\Omega M} \right) = \frac{1}{{M{T_s}}}\sum\limits_{p =  - \infty }^\infty  {{X_a}\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right) \cdot {H_m}\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)} \right)} \right)} 	
+\end{equation}
+
+其中总体的采样频率为$\Omega _s = \frac{2\pi}{T_s}$。
+采样的过程中引入了杂散的频谱分量，这些分量都处于通道采样频率$\Omega _s M$的整数倍的位置。
+可以用麦克劳林级数来描述含有非线性误差的输入-输出的关系。所谓麦克劳林级数就是泰勒级数在$x_0=0$处进行展开。
+\begin{equation}
+\label{equ:maclaurim}
+	f(x)=\sum_{k=0}^{\infty}\frac{f^{(k)}(0)}{k!}x^k
+\end{equation}
+其中，变量$x$由输入信号$x_m(t)$在$t=nMT_s$的采样点决定。因此可以用公式\ref{equ:maclaurim}来重新表述第m个通道的非线性误差的输出$F_m(.)$为
+\begin{equation}
+	\tilde x_m(t)=\sum_{k=0}^{\infty}\frac{f^{(k)}_m(0)}{k!}x^k_m(t)
+\end{equation}
+易得出它的傅里叶变换以后的结果
+\begin{equation}
+	{X_m}\left( {j\Omega } \right) = \sum\limits_{k = 0}^\infty  {\frac{{f_m^{\left( k \right)}\left( 0 \right)}}{{k!}}X_m^{\left( {*k} \right)}\left( {j\Omega } \right)} 
+\end{equation}
+
+其中$X_m^{\left( {*k} \right)}\left( {j\Omega } \right)$表示的是$X_m^{\left( {j\Omega } \right)}$和它自己的$(k-1)$阶的卷积。也就是
+
+\begin{equation}
+	X_m^{\left( {*k} \right)}\left( {j\Omega } \right) = \left\{ \begin{array}{l}
+	2\pi \delta \left( \Omega  \right),k = 0\\
+	{X_m}\left( {j\Omega } \right),k = 1\\
+	{\left( {\frac{1}{{2\pi }}} \right)^{k - 1}} \underbrace{\left( {{X_m} * {X_m} *  \ldots {X_m}} \right)}_{k-1 fold  
+		 convolution}\left( {j\Omega } \right),k\geq 1
+\end{array} \right
+\end{equation}	
+From Eq. (9,10) we recognize that additional spectral compo-nents occur, when the derivatives of the nonlinearity f(k)m(0) or thetiming deviations ∆tmdo not match.In order to ﬁnd out where these spectral components appear,we study a sinusoidal input signal xa (t ) = A sin (Ω0t ) and assumevanishing timing deviations ∆tm. We can write the kth power ofthe input signal xa (t ) as
+
+\begin{equation}
+	Y_n^l\left( {{e^{j\omega {T_s}}}} \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {X_a^{*l}\left( {j\omega  - jn\frac{{{\omega _s}}}{M}} \right)C_m^l{e^{ - jnm\frac{{2\pi }}{M}}}} 
+\end{equation}
+
+
+
+
