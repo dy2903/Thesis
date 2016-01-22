@@ -1,0 +1,485 @@
+% !Mode:: "TeX:UTF-8"
+
+\chapter{分时交替ADC理论基础}
+本章主要介绍分时交替ADC的理论基础。主要内容包括：
+\begin {itemize}
+	\item 数模转换的相关原理，主要包含采样理论、量化和编码等。
+	\item 模数转换器的性能参数，包括动态性能参数和静态性能参数等。
+	\item 分析TIADC的工作原理，建立相应的等效误差模型，既包括只含线性误差的误差模型，又包括含有非线性误差的误差模型，为后面研究估计和校准算法奠定了理论基础。
+	\item 对各种失配误差对TIADC系统的性能的影响进行仿真分析
+\end {itemize}
+% ====================2.1=============
+\section {A/D转换的原理}
+	A/D转换器是将模拟信号转换为数字信号的器件，在电路里面可以看作是一种编码器，它将模拟的信号量转换为一系列的数字编码。模拟到数字(A/D)过程可以分为若干基本的步骤，如图\ref{pics/chapter2/processOfADC}可以所示为ADC基本工作框图。可以看出主要有以下三个步骤：
+	% ===========================pic==============
+	\pic[htbp]{ADC工作原理}{}{pics/chapter2/processOfADC}
+
+	\begin {enumerate}
+		\item采样：将模拟信号$x_{a}\left( t \right)$输入ADC中，首先通过采样保持电路，完成对连续时间信号 离散点处取样，从而实现连续时间信号到离散时间信号的转换。采样保持电路（SHA）的作用是将抗均衡滤波器输出的模拟信号进行采样以后保持一段时间，便于后面的量化。
+		\item量化：采样得到的样本$x\left[ n \right]$并未经过量化， 将样本通过量化器，把离散时间连续值信号转换为离散值。
+		\item编码：量化以后的信号严格来说不是数字信号，需要将离散值$\hat x\left[ n \right]$经过编码器后，得到二进制序列，这才是ADC的最终输出。
+	\end {enumerate}
+	% =================subsection =======
+	\subsection {采样}
+	采样器的主要功能是对一个连续时间信号进行采样，从而得到相应的采样数据。理想状态下，采样器应该是产生一个$\delta $函数（单位冲激函数）的序列，而序列的幅值即为采样时间的高度。
+	采样过程就是用这样的周期性的冲激序列乘以输入信号$x(t)$。
+	因此对于周期为T的均匀采样，采样器的输出为
+	
+		\begin {equation}
+			{x_p}(t) = x(t)p(t) \label{xp}
+		\end {equation}
+		
+	其中
+		$p(t) = \sum\limits_{n =  - \infty }^{ + \infty } {\delta (t - nT)} $
+		称为采样函数，${\Omega _s} = 2\pi /T$叫作采样频率。
+	易知$p(t)$的连续时间傅里叶变换（FT）为：
+		
+		\begin{equation}
+			P(j\Omega ) = \frac{{2\pi }}{T}\sum\limits_{k =  - \infty }^{ + \infty } {\delta (\Omega  - k{\Omega _s})} \label{pw}
+		\end{equation}
+	
+	
+	从式\ref{xp}我们可以得出两个结论：
+	
+		\begin{enumerate}
+			\item	采样数据其实是通过对加权的$\delta $函数进行叠加得到的。然而实际电路并不能产生$\delta $函数，只能产生具有一定持续时间的脉冲。
+			\item 输入信号和$\delta $函数序列相乘（乘法是一种非线性的操作），表示采样其实固含有非线性在里面。因此对信号的采样其实相当于该信号与$\delta $序列的混频。
+		\end{enumerate}
+		
+	
+	根据式\ref{xp}可以知道${x_p}(t)$的连续时间傅里叶变换为
+	
+		\begin {equation}
+			{X_p}\left( t \right) = X\left( {j\Omega } \right)*P\left( {j\Omega } \right) \label {xpw}
+		\end{equation}
+		
+	联合式\ref{pw}、\ref{xpw}，可以得到${x_p}(t)$的频域表达式为
+	
+		\begin{equation}
+			{X_p}(j\Omega ) = \frac{1}{T}\sum\limits_{k =  - \infty }^{ + \infty } {X(j(\Omega  - k{\Omega _s}))} \label{Xpw}
+		\end{equation}
+		
+	式\ref{Xpw}表明，${x_p}(t)$的频谱是输入信号频谱进行无限移位叠加以后的结果，但在幅度上受因子$\frac{1}{T}$调制。所以复制得到的频谱的中心位于$nf_s(=\frac{n}{T})(n = 0, \pm 1, \pm 2, \ldots )$处。\par	
+	从带宽有限的输入信号转换为无限的频谱再次揭示了采样的非线性本质。\par
+	采样定理指出一个带限信号$x(t)$（当$\left| \Omega  \right| > {\Omega _M}$的时候，$X(j\Omega ) = 0$），如果${\Omega _s} > 2{\Omega _M}$ ，其中${\Omega _s} = 2\pi /T$ ，那么$x(t)$ 就唯一地由其样本$x(nT),(n=0, \pm 1 , \pm 2 , \ldots )$  所确定。同时信号重构的公式为：
+	
+		\begin{equation}
+			{x_r}(t) = \sum\limits_{n =  - \infty }^{ + \infty } {x(nT)\frac{{{\Omega _c}T}}{\pi }} \frac{{\sin ({\Omega _c}(t - nT))}}{{{\Omega _c}(t - nT)}}\label{xt}
+		\end{equation}
+	
+	式\ref{xt}是输入$x(nT)$和$\frac{{\sin \left( {{\Omega _s}t} \right)}}{{{\Omega _s}t}}$的卷积。\par
+	
+	在采样定理中，要求${\Omega _s} > 2 {\Omega _M}$，则采样频率的一半$\frac{{{f_s}}}{2} = \frac{1}{{2T}}$通常称之为奈奎斯特频率。\par
+
+	图\ref{pics/chapter2/processOfRecreation}给出了通过一个理想低通滤波器从采样的样本中重构出原来的信号的示意图。
+	图\ref{pics/chapter2/processOfRecreation}(c)中的${X_p}(j \Omega )$是频率的周期函数。如果${\Omega _s} > 2 {\Omega _M}$，那么${X_p}(j \Omega )$就是$X(j \Omega)$在采样频率上的如实呈现，所以完全可以用一个低通滤波器进行恢复。
+	% ======pic==========
+		\pic[htpb]{信号重构的过程}{}{pics/chapter2/processOfRecreation}
+	
+	由于噪声的频谱不可预知，因此可以采样在采样器预置一个坑混叠滤波来消除带外干扰，以免干扰折叠到带内然后破坏信号的频带。如图\ref{pics/chapter2/processOfADC}。\par
+	
+	% ===============subsubsection=============	
+	\subsubsection{上采样}\label{sec:upsample}
+		本小节我们主要分析上采样原理。上采样可以将$x(n)$的抽样频率提升M倍，即M倍插值的结果。先在已知抽样序列$x(n)$的相邻两个抽样点之间等间隔的插入M-1个零值点，然后进行数字低通滤波，就可以得到M倍插值的结果。其框图如图\ref{pics/chapter2/upsampling}所示。
+		 %==================pic====================j
+			\pic[htbp]{上采样系统框图}{}{pics/chapter2/upsampling}
+	
+		图中$ \uparrow M$表示在$x(n)$的相邻抽样点间补$(M-1)$个零值点，也就是表示零值插值，称为零值插值器。\par
+		实际上，我们有
+			 
+			 \begin{equation}
+				y\left( n \right) = \left\{ \begin{array}{l}
+x\left( {\frac{n}{M}} \right),n = 0, \pm M, \pm 2M, \ldots \\
+0,else
+\end{array} \right.
+			\end{equation}
+			
+			由此可以得到其傅里叶变换，并把式\ref{Xpw}带入可得。
+			\begin{equation}
+				\begin{array}{l}
+Y\left( {{e^{j\Omega {T_s}}}} \right) = X\left( {{e^{j\Omega M{T_s}}}} \right)\\
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\, = \frac{1}{{M{T_s}}}\sum\limits_{p =  - \infty }^\infty  {X\left( {{e^{j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}}} \right)} 
+\end{array} \label{eq:Y_upsample}
+			\end{equation}
+		
+	% ==================subsection=============
+	\subsection{量化}
+	
+	在数字信号处理领域，量化指将采样数据信号从连续电平转换成数字信号的过程。量化器的动态范围可以分为若干相等的量化间隔，每个间隔可以用一个给定的模拟幅度进行表示。而输入信号处于的量化间隔就可以表示信号的幅度。通常情况下，可以用量化间隔的中点来表示某个量化间隔。图\ref{pics/chapter2/quantizer}	所示的是一个3比特的量化器，$\Delta $表示步长，输出的是补码。\par
+	% ==============pic=======
+		\pic[htbp]{3比特的量化器实例}{}{pics/chapter2/quantizer}
+	
+	
+	使用满量程范围(Full-Scale Range,FSR)来描述ADC对双极性信号的转换范围，$L$ 量化间隔的数目，则每个量化间隔或者量化步长为$$\Delta  = \frac{{FSR}}{L}$$
+	
+	因为使用的是每个间隔的中点来表示所有位于该间隔的输入幅度，所以对输入电平进行量化必然引入误差。所以定义量化误差为量化值和实际值之差的序列，表示用离散值来表示连续信号的时候引入的误差。图\ref{pics/chapter2/quantizationNoise}中给出了量化噪声的模型。量化误差定义为
+	% ==========pic ,equation===========
+		\pic[htpb]{量化噪声的数学模型}{}{pics/chapter2/quantizationNoise}
+		\begin{equation}
+			e[n] = Q(x[n]) - x[n] = \hat x[n] - x[n]
+		\end{equation}
+		
+
+	
+	量化噪声$e[n]$一般假定为$[ - \Delta /2{\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} {\kern 1pt} \Delta /2]$上均值为0,且均匀分布的随机变量。故量化噪声功率为
+		
+		\begin{equation}
+			\sigma _e^2 = \int_{ - \Delta /2}^{\Delta /2} {{e^2}} \frac{1}{\Delta }de = \frac{{{\Delta ^2}}}{{12}} \label{quantizationNoise}
+		\end{equation}
+	
+	如果ADC是N比特的，式\ref{quantizationNoise}可以变形为
+		\begin{equation}
+			\sigma _e^2 = \frac{{{2^{ - 2N}}A_m^2}}{{12}} \label{quanN}
+		\end{equation}
+	其中，$A_m$是ADC的输入信号幅值。于是可以得到ADC的信噪比为
+		\begin{equation}
+			SNR = 10{\log _{10}}(\frac{{\sigma _x^2}}{{\sigma _e^2}}) \label{snr_adc}
+		\end{equation}
+	其中${\sigma _x}^2$表示信号功率。结合式\ref{quanN}、\ref{snr_adc}可以得到
+	
+	$$SNR = 6.02N + 1.76dB$$
+	
+	可以看出，比特数N增加一位，信噪比大概增加6dB左右。
+	
+	
+	
+	% ==============subsection==========
+	\subsection {编码}
+	对量化幅度进行编码，是A/D转换器的最后一个功能。所谓编码就是给量化输出分配一个唯一的二进制数。也就是说如果编码位数为$N$的话，那么可以表示$2^N$个不同的二进制数，若$L$是量化间隔的数目，则${2^N} \ge L$。\par
+	二进制的编码方案有很多，比如单极性标准二进制、互补标准二进制、双极性偏移二进制等等，但是最常用的编码方案还是二进制补码。这样的编码方案可以很方便的和与基于微处理器的系统以及数字音频系统进行转换。式\ref{btc}给出了$N$位二进制小数的补码表示式。
+		\begin{equation}
+			{\hat x_{eq}}[n] =  - {b_0}{2^0} + {b_1}{2^{ - 1}} + {b_2}{2^{ - 2}} +  \cdot  \cdot  \cdot  + {b_{N - 1}}{2^{ - (N - 1)}} \label{btc}
+		\end{equation}
+	其中，$b_0$为最高有效位，$b_{N-1}$是最低有效位。
+% ============section===========
+\section{A/D转换器的性能参数}
+
+	A/D转换器的输入/输出特性曲线，理论上斜率应该为1，而且应该过零点，如图\ref{pics/chapter2/idealCharacterCurve}所示。而实际上理想的ADC的特性转换曲线是阶梯上升的，所以存在量化误差。可以看出如果没有其他的误差的话，理想的实现曲线是被理论曲线均分的。然而，在实际的电路中，阶梯上升曲线的水平和竖直台阶不一定是1 LSB，会严重影响到ADC所在系统的整体性能。所以衡量一个A/D转换器的性能的仿真测试非常的重要。衡量ADC性能的指标可以分为静态性能参数和动态性能参数\citeup{doernberg1984full}，这些指标可以很好的校验ADC的性能以及后文提到的数字校准算法的校准效果。
+
+	% ================pic===========
+		\pic[htbp]{理想ADC特性转换曲线}{}{pics/chapter2/idealCharacterCurve}
+	
+	% ============subsection=============
+	
+	\subsection{静态性能参数}
+	
+		静态性能参数主要用来衡量A/D转换器量化直流信号时产生的精度上的误差，通常以LSB作为单位。如图\ref{pics/chapter2/performanceParameter}显示了ADC的静态参数。
+		\par
+	% ===================pic================
+		\pic[htpb]{ADC的静态参数}{width=0.7\textwidth}{pics/chapter2/performanceParameter}
+		下面给出静态性能参数的定义。
+		\par
+		
+		\begin{enumerate}
+			\item 失调误差（Offset）：A/D转换器输出从0到1仗的时候，实际的输入电压和理想的差值。
+			\item 分辨率：A/D转换器能分辨的最小模拟量的变化。N位的ADC能分辨的最小量化电平的能力为$2^N$位。
+			\item 增益误差（Gain Error）:输出满量程的斜率和理想的斜率之间的偏离值。
+			\item 微分非线性（DNL）:实际转换码字宽度和1 LSB的偏差的最大值。定义为$DNL = \max \left( {\frac{{{V_{{D_i}}}}}{{{V_{1LSB}}}} - 1} \right),\left( {1 \le i \le {2^N}} \right)$
+			\item 积分非线性（INL）：实际特性转换曲线和理想的转换曲线的偏差的最大值。定义为$INL = \max \left( {\sum\limits_{j = 1}^i {DN{L_j}} } \right),\left( {1 \le i \le {2^N}} \right)$
+			
+		\end{enumerate}
+		其中最为重要的性能参数莫过于DNL和INL了。大的DNL将作为一个额外噪声累加入了量化噪声中，降低了系统的信噪比。而大的INL意味着转换曲线和理想直线存在着较大的偏移，因此会导致谐波失真，将会影响到动态性能参数中的无杂散动态范围和信噪失真比。
+	
+	% ===========subsection==========
+	\subsection{动态性能参数}
+		动态性能参数与A/D转换器的速度有关，可以表示A/D转换器在动态的环境下的性能，因此对超高速ADC来说，可以更好的反映性能理想状况下，动态特性应该是由量化误差引起的等效量化噪声，然而一些非线性因素往往会噪声额外的噪声，从而会影响动态性能。如图\ref{pics/chapter2/frequencySpecturm}
+		给出了一个信号频谱剖析图，为了更好的理解，需要先说明几个基本概念。
+		\begin{itemize}
+			\item 信号分量：频谱中信号的位置，其幅度最高。可以通过寻找最大值的方法找到其在频谱中的位置，从而计算得到信号的能量。但是实际上能量并不是只在一个点上，而是在一个区间内，通常是在最大值正负10个点左右。
+			\item 	直流分量：一般为位于0频率处的幅度，也可以称之为零次谐波。直流分量一般不算噪声，所以计算噪声能量的时候应该减去该处的能量。
+			\item 
+			 谐波分量为信号分量整数倍频率上幅度。其能量计算方法也是先找到谐波的位置，然后将该位置附近的功率全部加起来，类似于计算信号功率的方法。
+		\end{itemize}
+
+		下面给出A/D转换器的动态性能评价指标\citeup{tilden2000standard}。
+		
+	% ============pic============
+	\pic[htbp]{信号频谱}{}{pics/chapter2/frequencySpecturm}
+	
+	\subsubsection{信噪比（SNR）}
+	
+	信噪比（Signal to Noise Ratio,SNR）定义为信号功率与噪声（包括量化噪声和电路噪声）的总功率之比，不包括谐波和直流分量，即：
+		\begin{equation}
+			SNR = 10{\log _{10}}\left( {\frac{{{p_s}}}{{{p_n}}}} \right)\;dB			
+		\end{equation}
+		
+	其中${p_s},{p_n}$分别表示信号功率和噪声功率。
+	\par
+	当只存在量化噪声的时候，信噪比可以近似写作：
+		\begin{equation}
+			SNR = 6.02n + 1.76dB
+		\end{equation}
+	其中$n$	为ADC的分辨率。
+	\subsubsection{信纳比（SINAD或者SNDR）}
+		信纳比（Signal to Noise and Distortion Ratio, SINAD）也叫信噪失真比，它与信噪比定义类似，但是还包括了正弦波输入产生的非线性失真项。可以定义为输出信号的功率与谐波成分以及噪声功率之和的比值，不包括直流分量，即：
+		\begin{equation}
+			SINAD = 10{\log _{10}}\left( {\frac{{{p_s}}}{{\left( {{p_n} + \sum\limits_{k = 1}^\infty  {{p_h}} } \right)}}} \right)\;dB
+		\end{equation}
+	其中$p_s$为信号功率，$p_n$为量化噪声功率，$p_h$为谐波分量的功率。\par
+		信纳比可以对ADC的动态性能进行总体的衡量，因为它把所有不需要的分量与输入频率做比较。
+	\subsubsection{有效位数（ENOB）}
+	
+		有效位数（Effective Number of Bits, ENOB）表示的是A/D转换器实际的分辨率，即为信纳比用位数来表示，和信纳比有直接的关系，即：
+		\begin{equation}
+			ENOB = \frac{{SINAD - 1.76}}{{6.02}}\;dB
+		\end{equation}
+	
+	\subsubsection{谐波失真（THD）}
+		谐波失真(Total Harmonic Distortion,THD)定义为位于奈奎斯特带宽谐波功率和与基波功率之比。一般来说，谐波失真只考虑第二次到第十次的谐波，高于十次的谐波项可以忽略。当输入幅值很大，并且频率很高的时候，最大的谐波项可能就只有第二或者第三次。计算公式为：
+		\begin{equation}
+			THD = 10\lg \left( {\frac{{\sum\limits_{i = 2}^{10} {{P_i}} }}{{{P_0}}}} \right)
+		\end{equation}
+	
+	
+	\subsubsection{无杂散动态范围（SFDR）}
+		无杂散动态范围（Spurious Free Dynamic Range, SFDR）是指输出信号的功率和最大谐波功率的比值，在图\ref{pics/chapter2/frequencySpecturm}中明显标出了。
+		\begin{equation}
+			SFDR = 10{\log _{10}}\left( {\frac{{{p_s}}}{{\max \left( {{p_h}} \right)}}} \right)\;dB
+		\end{equation}
+		SFDR提供的信息类似于THD，但是它关注于最坏的谐波分量。SFDR与输入信号幅值相关，在大输入信号情况下，最大谐波项是多个谐波信号中的一个。\par
+		SFDR对于通信系统非常重要，在通信系统中经常会遇到小信号和大信号混在一起的情况，这个时候，有可能大信号产生的杂散会非常接近于小的信号，从而屏蔽掉该信号。所以SFDR反映了输入端有很大信号的情况下，能检测出小信号的能力。
+	\subsection{动态性能参数的测试方法}
+		ADC的动态指标测试通常采样FFT频谱分析法\citeup{lundberg2002analog}。这种方法测试的点数少，可以全面的反映ADC的性能。因为所有的动态性能参数测量和信号的频率和幅度相关，而且正弦信号频率单一，所以一般将正弦信号作为测试信号送入ADC中，然后将得到的数据进行FFT，从而可以得到相应的动态性能指标。\par
+		使用这种方法进行ADC动态性能测试的时候，需要注意：
+		\begin{enumerate}
+			\item 
+				根据FFT原理，采样点数越多，频率分辨率越高，所以为了得到足够的分辨精度，必须首先满足相应的采样点数。根据采样定理，采样频率必须不小于两倍的输入，即$f_s \ge 2f_{in}$。此时设F为频率分辨率，则
+				\begin{equation}
+					F = \frac{{{f_s}}}{N} \ge \frac{{2{f_{in}}}}{N}
+				\end{equation}
+				
+				所以采样点数N满足：
+				\begin{equation}
+					N \ge \frac{{2{f_{in}}}}{F}
+				\end{equation}
+			\item
+				因为信号截断的时候会导致频谱泄漏，		一般采用在采样结果中添加窗函数，使采样序列两端信号逐渐减弱而非陡降来进行缓解。但是它的本质是对输入信号进行幅度调制，会使采样序列首尾处的尖峰信号被忽略，由此不能完全避免频谱泄露。所以可以采用相干采样来避免采样样本首尾间的阶跃。首先要保证时域采样样本刚好包含整数个周期的测试信号，以避免输出中出现重复的模式。当采样样本为$2^N$ 个时，输入信号的频率满足${f_{in}} = \frac{M}{{{2^N}}}*{f_s}$，其中M为素数。
+			
+		\end{enumerate}
+		
+		FFT频谱测试方法的流程如图\ref{pics/chapter2/testPlan}
+		% ========pic==========
+		\pic[htbp]{FFT频谱分析方法测试流程图}{}{pics/chapter2/testPlan}
+		
+\section{分时交替ADC工作原理}\label{sec:principleOfTIADC}
+	分时交替ADC的工作思想于1980年提出，其原理是使用M块采样频率相同的子ADC，相邻的ADC有$\frac{2\pi }{M}$的相位差，然后分别依次且循环的进行交替采样，再合路得到输出。图\ref{pics/chapter2/principleOfTIADC}	。因此由M块子ADC组成的TIADC系统采样速率是子ADC采样速率的M倍，所以利用多片低速，但是高精度的ADC构成这样的分时交替结构，可以达到高速高精度的采样效果。实践证明，这是一种非常有效的提高采样率的方法。本节将给出该结构的数学推导，以此来证明结构的有效性。
+	
+	% =======================pic========
+	
+	\pic[htpb]{TIADC工作原理}{}{pics/chapter2/principleOfTIADC}
+	首先设TIADC处于理想情况下，其通道数是M，每个通道的采样率为$f_{sub}=\frac{f_s}{M}$，所以系统总体的采样率为$f_s(=Mf_{sub})$。下面将推导M通道的TIADC系统和单片高速ADC的输入和输出关系。
+	=	\par
+	\begin{enumerate}
+		\item 求单片高速ADC采样输出的频谱。\par
+			设模拟输入信号为${x_a}(t)$，采样频率为$f_s$，采样脉冲为$p(t)$，则单片ADC的输出为$y(nT_s)=p(t)x(t)$，其傅里叶变换为
+		
+			\begin{equation}
+				Y\left( {{e^{j\Omega }}} \right) = \frac{1}{{2\pi }}X\left( {{e^{j\Omega }}} \right)*P\left( {{e^{j\Omega }}} \right)\label{Y_single}
+			\end{equation}
+
+			其中采样脉冲的时域表达式为
+			\begin{equation}
+				p(t) = \sum\limits_{n =  - \infty }^{ + \infty } {\delta (t - n{T_s})} 			
+			\end{equation}
+			其中$T_s=\frac{1}{f_s}$。
+			可以得到$p(t)$的傅里叶变换（FT）为
+			\begin{equation}
+				P\left( {{e^{j\Omega }}} \right) = \frac{{2\pi }}{T}\sum\limits_{k =  - \infty }^\infty  {\delta \left( {\Omega  - k{\Omega _s}} \right)}  \label{P_sample}
+			\end{equation}
+		将式\ref{P_sample}以及$X(e^{j\Omega })$代入式\ref{Y_single}中可以得到单片高速ADC的采样输出的频谱：
+			\begin{equation}
+				Y\left( {{e^{j\Omega }}} \right) = \frac{1}{{{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {{X_a}\left( {j\Omega  - jk{\Omega _s}} \right)}  \label{Y_analog}
+			\end{equation}
+			
+			接下来求单片高速ADC采样输出$y[n]$的离散时间傅里叶变换。\par			因为数字角频率是模拟角频率对抽样频率的归一化值，所以它们之间存在如下的关系$\omega = \frac{\Omega }{f_s}$，其中$\omega$表示数字角频率，$\Omega$表示模拟角频率。上式可以变形为
+			
+				\begin{equation}
+					\Omega = \frac{\omega }{T_s} \label{digitalAngularFre}
+				\end{equation}
+				
+			将式\ref{digitalAngularFre}代入\ref{Y_analog}中可以得到单片ADC采样输出$y[n]$的离散时间傅里叶变换（DTFT），也即单片ADC采样输出的频谱：
+			
+				\begin{equation}
+					Y\left( {{e^{j\omega }}} \right) = \frac{1}{{{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {{X_a}\left( {j\frac{\omega }{{{T_s}}} - jk\frac{{2\pi }}{{{T_s}}}} \right)}  \label{Y_finalSingle}
+				\end{equation}
+				
+		\item 得到第m通道ADC的理想采样输出$y_m[k]$的频谱。\par
+			第一个步骤只是获得了单片ADC的频域表达式，这个步骤的主要目的是加上TIADC的特性，得到第m通道的理想采样输出的频谱。\par
+			因为系统采样率$f_s=Mf_{sub}$，所以$T_{sub}=\frac{1}{f_{sub}}=\frac{M}{f_s}=MT_s$。
+			由图\ref{pics/chapter2/principleOfTIADC}易知第m通道的输出$y_m[k]$为
+				\begin{equation}
+					{y_m}[k] = {x_a}\left( {k{T_{sub}} + m{T_s}} \right) = {x_a}(kM{T_s} + m{T_s}),\left( {m = 0,1, \ldots ,M - 1} \right)
+				\end{equation}
+			可以得到频谱为
+				\begin{equation}
+					{Y_m}\left( {{e^{j\omega }}} \right) = \frac{1}{{M{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {{X_a}\left( {j\frac{\omega }{{M{T_s}}} - jk\frac{{2\pi }}{{M{T_s}}}} \right)} {e^{j\left( {\frac{\omega }{{M{T_s}}} - k\frac{{2\pi }}{{M{T_s}}}} \right)m{T_s}}}  \label{Y_m}
+				\end{equation}
+		\item 对M个通道进行合路。\par
+			从图\ref{pics/chapter2/principleOfTIADC}(b)中可以看出
+			对M个通道进行合路的操作可以等效于对单通道的信号进行M倍插值，插入M-1个零值点以后得到$y_m^ \uparrow [k]$，再进行移位求和。\par
+			所以在频域上，合路的信号可以表示为$y_m^ \uparrow [k]$乘以移位因子$e^{j\omega m}$：
+
+				\begin{equation}
+					Y({e^{j\omega }}) = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}} Y_m^ \uparrow \left( {{e^{j\omega }}} \right) \label{Y_shift}
+				\end{equation}
+			其中$Y_m^ \uparrow \left( {{e^{j\omega }}} \right)$是$y_m^ \uparrow [k]$的频域表达式。
+			$y_m^ \uparrow [k]$的DTFT表示为
+				\begin{equation}
+					Y_m^ \uparrow \left( {{e^{j\omega }}} \right) = \frac{1}{{M{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {{X_a}\left( {j\frac{\omega }{{{T_s}}} - jk\frac{{2\pi }}{{M{T_s}}}} \right)} {e^{j\left( {\frac{\omega }{{{T_s}}} - k\frac{{2\pi }}{{M{T_s}}}} \right)m{T_s}}} \label{Y_mUpSample}
+				\end{equation}
+			
+			把式\ref{Y_mUpSample}代入式\ref{Y_shift}中可以得到。
+				
+				\begin{equation}
+					\begin{array}{l}
+Y({e^{j\omega }}) = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}} Y_m^ \uparrow \left( {{e^{j\omega }}} \right)\\
+\quad \quad \;\;\, = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}\left( {\frac{1}{{M{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {{X_a}\left( {j\frac{\omega }{{{T_s}}} - jk\frac{{2\pi }}{{M{T_s}}}} \right)} {e^{j\left( {\frac{\omega }{{{T_s}}} - k\frac{{2\pi }}{{M{T_s}}}} \right)m{T_s}}}} \right)} \\
+\quad \quad \;\;\, = \frac{1}{{{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {\left( {\frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{e^{ - j\frac{{2\pi }}{M}km}}} } \right)} {X_a}\left( {j\frac{\omega }{{{T_s}}} - jk\frac{{2\pi }}{{M{T_s}}}} \right)
+\end{array} \label{Y_ew}
+				\end{equation}
+			
+			如果记$R_k$为
+			\begin{equation}
+				{R_k} = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{e^{ - j\frac{{2\pi }}{M}km}}}  = \left\{ {\begin{array}{*{20}{c}}
+{1{\rm{   ,}}k = 0, \pm M, \pm 2M, \cdots }\\
+{0{\rm{  ,else                   }}}
+\end{array}} \right.{\rm{   }}
+			\end{equation}
+		然后式\ref{Y_ew}可以化为
+		
+			\begin{equation}
+				Y({e^{j\omega }}) = \frac{1}{{{T_s}}}\sum\limits_{k =  - \infty }^{ + \infty } {{X_a}\left( {j\frac{\omega }{{{T_s}}} - jk\frac{{2\pi }}{{{T_s}}}} \right)}  \label{Y_final}
+			\end{equation}
+		
+		将式\ref{Y_final}和式\ref{Y_finalSingle}进行对比，可以发现，理想状况下，M通道，采样率为$f_s$的TIADC系统和采样率同为$f_s$的单片高速ADC的输出频谱相同。由此可以证明TIADC结构可以实现高速的A/D转换。不过这种结构将会引入新的问题，后文会讲到实际应用中会出现的失配误差，它们将影响整个系统的性能。	
+		\end{enumerate}
+\section{分时交替ADC失配误差建模}
+	本章\ref{sec:principleOfTIADC}小节中对TIADC有效性的推导建立在各通道工作在同样的时钟并且相邻子ADC的相位严格可控，同时通道的偏置、增益等参数完全相同的情况下。但是实际的TIADC系统会存在偏置、增益等线性误差以及其他各种非线性误差，这些误差会对频谱产生大量的杂散分量，对SFDR和ENOB造成极坏的影响。\par
+	\subsection{TIADC失配误差模型}
+		
+	本章\ref{sec:principleOfTIADC}小节中对TIADC有效性的推导建立在各通道工作在同样的时钟并且相邻子ADC的相位严格可控，同时通道的偏置、增益等参数完全相同的情况下。由于每一个通道都是一个单独的ADC，所以每一个通道都独自含有一些误差。但同时因为它们又构成一个完全并行的系统，参数间的失配同样会产生额外的误差。所以TIADC系统中偏置、增益、时钟偏置误差以及其他各种非线性误差会对频谱产生大量的杂散分量，对SFDR和ENOB造成极坏的影响。\par
+	失配误差会严重减少和限制时间交错ADC的性能，所以早期有大量的文献\citeup{vogel2005impact}\citeup{kurosawa2001explicit}\citeup{jenq1988digital}对增益、偏置、时钟失配误差进行了研究。并建立了分时交错ADC等效误差模型，全面分析了各种误差对系统的性能的影响。\par
+	然后只有很少一部分的文章对静态非线性误差对性能的影响作出了分析，而且大多只是分析了INL和DNL等静态参数\citeup{ieee2000standard}。文献\cite{simoes1997nonlinearity}揭示了实际上非线性误差同样会影响TIADC系统的动态性能，而且不能用传统的INL的测试方式来进行测量。文献\cite{kurosawa2002channel}阐释了非线性失配的一些特性，然而并没有建立相应的数学模型。\par
+	本文的失配误差建模和以前不同的地方在于，建立了一个通用的数学模型，不但包括增益、偏置等研究得比较多的线性误差，而且还考虑进去了非线性模型。\par
+	文献\cite{vogel2004analysis}显示了使用非线性滤波器组（ nonlinear hybrid filter banks,NHFB）来进行建模的优越性，由此可见，可以将混合滤波器组的概念进行一定的推广，然后得到TIADC系统比较全面的输入输出关系。本节还将阐释产生时钟偏置误差的两种不同的噪声源，以及探究增益、偏置失配误差和非线性失配之间的关系。\par	
+	为了分析通道失配误差对性能的影响，首先需要构建单通道的数学模型。\par
+	\subsection{非线性系统的数学表达}\label{sec:nonlinearTheory}		
+		
+		如果任意一个连续时间且无记忆的非线性函数$f(x)$，其中x处于[a,b]的区间内，那么它可以用一个单变量的多项式函数$p(x)$来进行近似，并且满足
+
+			\begin{equation}
+				\left| {f\left( x \right) - p\left( x \right)} \right| < \varepsilon ,\,\,\,\,x \in \left[ {a,b} \right]
+			\end{equation}
+			
+		其中$\varepsilon $的值可以任意小。
+		对于这个多项式函数$p(x)$，可以写作：
+			\begin{equation}
+				\begin{array}{l}
+	p\left( x \right) = {c_0}{x^0} + {c_1}{x^1} +  \cdots  + {c_{K - 2}}{x^{K - 2}} + {c_{K - 1}}{x^{K - 1}}\\
+	\,\,\,\,\,\,\,\,\,\,\, = \sum\limits_{k = 0}^{K - 1} {{c_k}{x^k}} 
+	\end{array} \label{eq:theorem}
+			\end{equation}
+			
+		因此任意一个连续的函数$f(x)$，并且其自变量处于闭区间[a,b]上，可以统一用一个多项式$p(x)$进行表示，而且可以达到任意的精度。这就是所谓的维尔斯特拉斯逼近定理\citeup{zill2011advanced}。正如这个定理所说，我们可以找到一个多项式$p(x)$来对静态非线性误差进行完美的近似。\par
+		当输入的是一个随时间变化的信号的时候，非线性函数的输出也随着时间改变。
+		此时式\ref{eq:theorem}可以重写为
+			
+			\begin{equation}
+				\tilde x\left( t \right) = \sum\limits_{k = 0}^{K - 1} {{c_k}{x^k}\left( t \right)}  \label{eq:theoremRewrite}
+			\end{equation}
+			
+		对式\ref{eq:theoremRewrite}进行傅里叶变换：
+			
+			\begin{equation}
+				\tilde X\left( {j\Omega } \right) = \sum\limits_{k = 0}^{K - 1} {{c_k}{X^{\left( {*k} \right)}}\left( {j\Omega } \right)} 
+			\end{equation}
+			
+		其中，${X^{\left( {*k} \right)}}\left( {j\Omega } \right)$表示$(k-1)$阶和自己的卷积，也即：
+		
+			\begin{equation}
+				\begin{array}{l}
+	{X^{\left( {*k} \right)}}\left( {j\Omega } \right)\\
+	 = \left\{ \begin{array}{l}
+	2\pi \delta \left( \Omega  \right),k = 0\\
+	X\left( {j\Omega } \right),k = 1\\
+	{\left( {\frac{1}{{2\pi }}} \right)^{k - 1}}\underbrace {\left( {X*X* \cdots *X} \right)\left( {j\Omega } \right)}_{\left( {k - 1} \right) - convolutions},k \ge 2
+	\end{array} \right.
+	\end{array}
+			\end{equation}
+		这样我们就为连续时间信号通过非线性系统找到时域上和频域上确定的输入输出关系。
+	\subsection{等效误差模型的输入输出关系}
+		为了分析通道失配误差对性能的英雄，需要先构造单通道的数学模型。
+		TIADC第m通道的数学模型如图\ref{pics/chapter2/mthModel}所示，其中非线性用$f(x)$来进行表示。根据式\ref{eq:theoremRewrite}，可以把第m通道的采样序列表示为：
+			\begin{equation}
+				\begin{array}{l}
+{y_m}\left[ n \right] = \sum\limits_{k = 0}^{K - 1} {{c_k}{x^k}\left( t \right)}  = \sum\limits_{k = 0}^{K - 1} {{c_k}{x^k}\left( {nM{T_s} + m{T_s}} \right)} \\
+\,\,\,\,\,\,\,\,\,\,\,\, = {o_m} + {g_m}x\left( {nM{T_s} + m{T_s}} \right) + \sum\limits_{k = 2}^{K - 1} {{c_k}{x^k}\left( {nM{T_s} + m{T_s}} \right)} 
+\end{array}
+			\end{equation}
+		% ===========pic==========
+			\pic[htbp]{第m通道的数学模型}{}{pics/chapter2/mthModel}
+		其中$o_m$、$g_m$分别表示偏置、增益失配误差。\par
+		可以看出其实多项式$c_k$的第0阶和第1阶就是偏置误差和增益失配误差。\par
+		为了更容易理解误差建模的基本思想，结合图\ref{pics/chapter2/mthModel}、\ref{pics/chapter2/principleOfTIADC}两幅图，可以把图\ref{pics/chapter2/mthModel}中的系统模型进行等效转换，然后得出图\ref{pics/chapter2/NHFBofTIADC}的TIADC等效模型图。
+		% ==========pic==========
+			\pic[htbp]{TIADC等效误差模型}{}{pics/chapter2/NHFBofTIADC}
+			
+		
+	为了研究每个通道的输出，我们需要对每个通道的每个模块的输出进行进一步的分析。
+	\par
+	输入信号为${x_m}(t)$，模拟滤波器组为${H_m}(j\Omega )$，是一个延迟器。即
+	
+		\begin{equation}
+			{H_m}(j\Omega ) = {e^{j\Omega (m{T_s} - {r_m}{T_s})}},m = 0,1, \cdot  \cdot  \cdot ,M - 1
+		\end{equation}
+	那么通过模拟滤波器组以后的信号的傅里叶变换式为：
+		\begin{equation}
+			{X_m}\left( {j\Omega } \right) = {X_a}\left( {j\Omega } \right){H_m}\left( {j\Omega } \right)
+		\end{equation}
+		
+	模拟信号${x_a}(t)$经过模拟滤波器组以后，需要进行采样。然后紧挨的是非线性误差模块$f_m(x)$以及上采样模块。。因为$f_m(x)$是无记忆且非线性的函数，所以加上非线性误差和采样的顺序无关紧要。如图\ref{pics/chapter2/changeOrder}所示。小节里面曾经说过上采样的
+	
+	 %==================pic====================
+		\pic[htpb]{加非线性误差和采样模块的顺序可以更改}{}{pics/chapter2/changeOrder}
+		
+		在\ref{sec:upsample}小节里面曾经说过上采样的
+				\begin{equation}
+				\begin{array}{l}
+Y\left( {{e^{j\Omega {T_s}}}} \right) = X\left( {{e^{j\Omega M{T_s}}}} \right)\\
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\, = \frac{1}{{M{T_s}}}\sum\limits_{p =  - \infty }^\infty  {X\left( {{e^{j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}}} \right)} 
+\end{array} 
+			\end{equation}
+		由\ref{sec:upsample}中的式\ref{eq:Y_upsample}可以知道，经过上采样以后的序列的傅里叶变换为$Y\left( {{e^{j\Omega {T_s}}}} \right) = \frac{1}{{M{T_s}}}\sum\limits_{p =  - \infty }^\infty  {X\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)} \right)} $。同时代入
+		\ref{sec:nonlinearTheory}小节中的\ref{eq:theoremRewrite}式子，可以得到采样、加上非线性误差以及上采样以后的序列${{\tilde y}_m}\left( n \right)$的傅里叶变换为
+			\begin{equation}
+				{\tilde Y_m}\left( {j\Omega M{T_s}} \right) = \frac{1}{{M{T_s}}}\sum\limits_{p =  - \infty }^\infty  {\sum\limits_{k = 0}^{K - 1} {{c_{k,m}}X_m^{\left( {*k} \right)}\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)} \right)} }  \label{eq:Y_mWithError}
+			\end{equation}
+		其中k和表示非线性的多项式的阶数有关；m表示当前处于第m通道，p是采样以后频谱以抽样频率为间隔重复，进行周期延拓的指数；运算符$(*k)$表示进行k-1阶的卷积。\par
+		从图\ref{pics/chapter2/NHFBofTIADC}中可以看出TIADC的带失配输出的信号频谱$Y(e^{j\omega })$是系统的M个通道输出信号的合路的傅里叶变换。\ref{sec:nonlinearTheory}小节中说过，输出信号合路等效于每一个通道频谱${Y_m}(e^{j\omega })$进行移位求和，其数学表达式如下：
+		 %==================equation====================
+			\begin{equation}
+				\begin{array}{l}
+Y\left( {{e^{j\Omega {T_s}}}} \right) = \sum\limits_{m = 0}^{M - 1} {{Y_m}\left( {{e^{j\Omega {T_s}}}} \right)} \\
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\, = \sum\limits_{m = 0}^{M - 1} {{G_m}\left( {{e^{j\Omega {T_s}}}} \right){{\tilde Y}_m}\left( {{e^{j\Omega M{T_s}}}} \right)} 
+\end{array}   \label{eq:combiner}
+			\end{equation}
+		其中${G_m}({e^{j\Omega {T_s}}}) = {e^{ - j\Omega m}}{|_{\omega  = \Omega {T_s}}} = {e^{ - j\Omega {T_s}m}}$，表示移位。
+		\par
+		
+		把式\ref{eq:Y_mWithError}代入式\ref{eq:combiner}中，然后把得到的公式重写如下：
+			 %==================equation====================
+			 \begin{equation}
+				Y\left( {{e^{j\Omega {T_s}}}} \right) = \frac{1}{{{T_s}}}\sum\limits_{k = 0}^{K - 1} {\sum\limits_{p =  - \infty }^\infty  {{T_{p,k}}\left( {j\Omega } \right)} }  \label{eq:YwithError}
+			\end{equation}
+			
+		其中,
+			\begin{equation}
+				{T_{p,k}}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}}} \left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right. \times {G_m}\left( {{e^{j\Omega {T_s}}}} \right)
+			\end{equation}
+		
+		
+		
+		
+	
+	
+	

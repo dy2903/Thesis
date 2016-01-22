@@ -1,0 +1,79 @@
+% !Mode:: "TeX:UTF-8"
+
+
+
+\chapter{非线性}
+\subsection{非线性失配的特征}
+对含有非线性失配误差的TIADC进行建模可以通过如下两种方式：混合滤波器组或者时变滤波器组。相比于时变滤波器表示方式，混合滤波器的表示方式可以更加方便的进行公式的推导和分析非线性误差引起的失配的原因。正如图显示的，TIADC系统中包含了一个模拟分析滤波器组、M片子ADC、M个上采样器以及一个数字综合滤波器组。TIADC系统总体的采样率为$f_s$，因此采样周期为$T_s=1/f_s$。对每一个子ADC来说，采样率为$f_s/M$。
+\par
+假设模拟的输入信号的频率为$x_a(t)$，而且受限于奈奎斯特采样频率。所以输入信号的连续时间傅里叶变换（CTFT）可以表示为
+\begin{equation}
+	X_a(j\omega)=0,\left| \omega \right|\geq=\pi/T_s
+\end{equation}
+我们使用了一组L阶的多项式来表示这种多变的传输曲线。也就是说，每个通道的传输曲线可以通过L阶的多项式来进行建模。偏置误差和增益误差分别可用0阶和一阶多项式来进行标识。
+
+\subsection{TIADC中的非线性误差的分析}
+为了计算TIADC的包含非线性失配的输出，可以使用混合滤波器组(HFB)的结构。首先在信号路径中加入$F_m( . )$。如图所示的是第m个通道的非线性HFB表示。
+分析滤波器
+\begin{equation}
+\label{equ:Hm}
+H_m(j\Omega)={e^{j\Omega {T_s}m}}{e^{ - j\Omega \Delta {t_m}}}
+\end{equation}
+
+在公式中（\ref{equ:Hm}）中$e^{-j\Omega \Delta {t_m}}$这个表达式将采样和保持电路的时间偏置误差考虑在内。
+对于综合滤波器来说，其表达式为
+\begin{equation}
+	G_m(e^{j\Omega T_s})=e^{-j\Omega m} | _{\omega =\Omega T_s} = e^{-j\Omega T_s m}
+\end{equation}
+
+
+
+于是输出表达式可以写做
+\begin{equation}
+\label{equ:}
+	Y\left(e^{j\Omega T_s}\right)=\sum_{m=0}^{M-1} Y_m\left(e^{j\Omega T_s}\right)=\sum_{m=0}^{M-1}e^{-j\Omega T_s m}{\tilde X_m(j\Omega M)}
+\end{equation}
+其中$\tilde X_m$表示是采样输入信号的非线性部分$F_m(.)$的输出
+
+ADC采样输出后的频谱为
+\begin{equation}
+{X_m}\left( {j\Omega M} \right) = \frac{1}{{M{T_s}}}\sum\limits_{p =  - \infty }^\infty  {{X_a}\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right) \cdot {H_m}\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)} \right)} \right)} 	
+\end{equation}
+
+其中总体的采样频率为$\Omega _s = \frac{2\pi}{T_s}$。
+采样的过程中引入了杂散的频谱分量，这些分量都处于通道采样频率$\Omega _s M$的整数倍的位置。
+可以用麦克劳林级数来描述含有非线性误差的输入-输出的关系。所谓麦克劳林级数就是泰勒级数在$x_0=0$处进行展开。
+\begin{equation}
+\label{equ:maclaurim}
+	f(x)=\sum_{k=0}^{\infty}\frac{f^{(k)}(0)}{k!}x^k
+\end{equation}
+其中，变量$x$由输入信号$x_m(t)$在$t=nMT_s$的采样点决定。因此可以用公式\ref{equ:maclaurim}来重新表述第m个通道的非线性误差的输出$F_m(.)$为
+\begin{equation}
+	\tilde x_m(t)=\sum_{k=0}^{\infty}\frac{f^{(k)}_m(0)}{k!}x^k_m(t)
+\end{equation}
+易得出它的傅里叶变换以后的结果
+\begin{equation}
+	{X_m}\left( {j\Omega } \right) = \sum\limits_{k = 0}^\infty  {\frac{{f_m^{\left( k \right)}\left( 0 \right)}}{{k!}}X_m^{\left( {*k} \right)}\left( {j\Omega } \right)} 
+\end{equation}
+
+其中$X_m^{\left( {*k} \right)}\left( {j\Omega } \right)$表示的是$X_m^{\left( {j\Omega } \right)}$和它自己的$(k-1)$阶的卷积。也就是
+
+\begin{equation}
+	X_m^{\left( {*k} \right)}\left( {j\Omega } \right) = \left\{ \begin{array}{l}
+	2\pi \delta \left( \Omega  \right),k = 0\\
+	{X_m}\left( {j\Omega } \right),k = 1\\
+	{\left( {\frac{1}{{2\pi }}} \right)^{k - 1}} \underbrace{\left( {{X_m} * {X_m} *  \ldots {X_m}} \right)}_{k-1 fold  
+		 convolution}\left( {j\Omega } \right),k\geq 1
+\end{array} \right
+\end{equation}	
+From Eq. (9,10) we recognize that additional spectral compo-nents occur, when the derivatives of the nonlinearity f(k)m(0) or thetiming deviations ∆tmdo not match.In order to ﬁnd out where these spectral components appear,we study a sinusoidal input signal xa (t ) = A sin (Ω0t ) and assumevanishing timing deviations ∆tm. We can write the kth power ofthe input signal xa (t ) as
+
+\begin{equation}
+	Y_n^l\left( {{e^{j\omega {T_s}}}} \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {X_a^{*l}\left( {j\omega  - jn\frac{{{\omega _s}}}{M}} \right)C_m^l{e^{ - jnm\frac{{2\pi }}{M}}}} 
+\end{equation}
+
+
+
+
+
+
