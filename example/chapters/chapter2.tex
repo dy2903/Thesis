@@ -240,6 +240,8 @@ Y\left( {{e^{j\Omega {T_s}}}} \right) = X\left( {{e^{j\Omega M{T_s}}}} \right)\\
 		SFDR对于通信系统非常重要，在通信系统中经常会遇到小信号和大信号混在一起的情况，这个时候，有可能大信号产生的杂散会非常接近于小的信号，从而屏蔽掉该信号。所以SFDR反映了输入端有很大信号的情况下，能检测出小信号的能力。
 	\subsection{动态性能参数的测试方法}
 		ADC的动态指标测试通常采样FFT频谱分析法\citeup{lundberg2002analog}。这种方法测试的点数少，可以全面的反映ADC的性能。因为所有的动态性能参数测量和信号的频率和幅度相关，而且正弦信号频率单一，所以一般将正弦信号作为测试信号送入ADC中，然后将得到的数据进行FFT，从而可以得到相应的动态性能指标。\par
+		% ========pic==========
+				\pic[htbp]{FFT频谱分析方法测试流程图}{}{pics/chapter2/testPlan}
 		使用这种方法进行ADC动态性能测试的时候，需要注意：
 		\begin{enumerate}
 			\item 
@@ -257,9 +259,8 @@ Y\left( {{e^{j\Omega {T_s}}}} \right) = X\left( {{e^{j\Omega M{T_s}}}} \right)\\
 			
 		\end{enumerate}
 		
-		FFT频谱测试方法的流程如图\ref{pics/chapter2/testPlan}
-		% ========pic==========
-		\pic[htbp]{FFT频谱分析方法测试流程图}{}{pics/chapter2/testPlan}
+		FFT频谱测试方法的流程如图\ref{pics/chapter2/testPlan}。
+
 		
 \section{分时交替ADC工作原理}\label{sec:principleOfTIADC}
 	分时交替ADC的工作思想于1980年提出，其原理是使用M块采样频率相同的子ADC，相邻的ADC有$\frac{2\pi }{M}$的相位差，然后分别依次且循环的进行交替采样，再合路得到输出。图\ref{pics/chapter2/principleOfTIADC}	。因此由M块子ADC组成的TIADC系统采样速率是子ADC采样速率的M倍，所以利用多片低速，但是高精度的ADC构成这样的分时交替结构，可以达到高速高精度的采样效果。实践证明，这是一种非常有效的提高采样率的方法。本节将给出该结构的数学推导，以此来证明结构的有效性。
@@ -268,7 +269,7 @@ Y\left( {{e^{j\Omega {T_s}}}} \right) = X\left( {{e^{j\Omega M{T_s}}}} \right)\\
 	
 	\pic[htpb]{TIADC工作原理}{}{pics/chapter2/principleOfTIADC}
 	首先设TIADC处于理想情况下，其通道数是M，每个通道的采样率为$f_{sub}=\frac{f_s}{M}$，所以系统总体的采样率为$f_s(=Mf_{sub})$。下面将推导M通道的TIADC系统和单片高速ADC的输入和输出关系。
-	=	\par
+		\par
 	\begin{enumerate}
 		\item 求单片高速ADC采样输出的频谱。\par
 			设模拟输入信号为${x_a}(t)$，采样频率为$f_s$，采样脉冲为$p(t)$，则单片ADC的输出为$y(nT_s)=p(t)x(t)$，其傅里叶变换为
@@ -354,8 +355,6 @@ Y({e^{j\omega }}) = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}} Y_m^ \uparr
 		将式\ref{Y_final}和式\ref{Y_finalSingle}进行对比，可以发现，理想状况下，M通道，采样率为$f_s$的TIADC系统和采样率同为$f_s$的单片高速ADC的输出频谱相同。由此可以证明TIADC结构可以实现高速的A/D转换。不过这种结构将会引入新的问题，后文会讲到实际应用中会出现的失配误差，它们将影响整个系统的性能。	
 		\end{enumerate}
 \section{分时交替ADC失配误差建模}
-	本章\ref{sec:principleOfTIADC}小节中对TIADC有效性的推导建立在各通道工作在同样的时钟并且相邻子ADC的相位严格可控，同时通道的偏置、增益等参数完全相同的情况下。但是实际的TIADC系统会存在偏置、增益等线性误差以及其他各种非线性误差，这些误差会对频谱产生大量的杂散分量，对SFDR和ENOB造成极坏的影响。\par
-	\subsection{TIADC失配误差模型}
 		
 	本章\ref{sec:principleOfTIADC}小节中对TIADC有效性的推导建立在各通道工作在同样的时钟并且相邻子ADC的相位严格可控，同时通道的偏置、增益等参数完全相同的情况下。由于每一个通道都是一个单独的ADC，所以每一个通道都独自含有一些误差。但同时因为它们又构成一个完全并行的系统，参数间的失配同样会产生额外的误差。所以TIADC系统中偏置、增益、时钟偏置误差以及其他各种非线性误差会对频谱产生大量的杂散分量，对SFDR和ENOB造成极坏的影响。\par
 	失配误差会严重减少和限制时间交错ADC的性能，所以早期有大量的文献\citeup{vogel2005impact}\citeup{kurosawa2001explicit}\citeup{jenq1988digital}对增益、偏置、时钟失配误差进行了研究。并建立了分时交错ADC等效误差模型，全面分析了各种误差对系统的性能的影响。\par
@@ -363,7 +362,7 @@ Y({e^{j\omega }}) = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}} Y_m^ \uparr
 	本文的失配误差建模和以前不同的地方在于，建立了一个通用的数学模型，不但包括增益、偏置等研究得比较多的线性误差，而且还考虑进去了非线性模型。\par
 	文献\cite{vogel2004analysis}显示了使用非线性滤波器组（ nonlinear hybrid filter banks,NHFB）来进行建模的优越性，由此可见，可以将混合滤波器组的概念进行一定的推广，然后得到TIADC系统比较全面的输入输出关系。本节还将阐释产生时钟偏置误差的两种不同的噪声源，以及探究增益、偏置失配误差和非线性失配之间的关系。\par	
 	为了分析通道失配误差对性能的影响，首先需要构建单通道的数学模型。\par
-	\subsection{非线性系统的数学表达}\label{sec:nonlinearTheory}		
+	\subsection{非线性系统的数学表达式}\label{sec:nonlinearTheory}		
 		
 		如果任意一个连续时间且无记忆的非线性函数$f(x)$，其中x处于[a,b]的区间内，那么它可以用一个单变量的多项式函数$p(x)$来进行近似，并且满足
 
@@ -413,7 +412,7 @@ Y({e^{j\omega }}) = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}} Y_m^ \uparr
 			\begin{equation}
 				\begin{array}{l}
 {y_m}\left[ n \right] = \sum\limits_{k = 0}^{K - 1} {{c_k}{x^k}\left( t \right)}  = \sum\limits_{k = 0}^{K - 1} {{c_k}{x^k}\left( {nM{T_s} + m{T_s}} \right)} \\
-\,\,\,\,\,\,\,\,\,\,\,\, = {o_m} + {g_m}x\left( {nM{T_s} + m{T_s}} \right) + \sum\limits_{k = 2}^{K - 1} {{c_k}{x^k}\left( {nM{T_s} + m{T_s}} \right)} 
+\,\,\,\,\,\,\,\,\,\,\,\, = {o_m} + {g_m}x\left( {nM{T_s} + m{T_s}} \right) + \sum\limits_{k = 2}^{K - 1} {{c_k}{x^k}\left( {nM{T_s} + m{T_s}} \right)} \label{eq:y_m}
 \end{array}
 			\end{equation}
 		% ===========pic==========
@@ -437,7 +436,7 @@ Y({e^{j\omega }}) = \sum\limits_{m = 0}^{M - 1} {{e^{ - j\omega m}}} Y_m^ \uparr
 			{X_m}\left( {j\Omega } \right) = {X_a}\left( {j\Omega } \right){H_m}\left( {j\Omega } \right)
 		\end{equation}
 		
-	模拟信号${x_a}(t)$经过模拟滤波器组以后，需要进行采样。然后紧挨的是非线性误差模块$f_m(x)$以及上采样模块。。因为$f_m(x)$是无记忆且非线性的函数，所以加上非线性误差和采样的顺序无关紧要。如图\ref{pics/chapter2/changeOrder}所示。小节里面曾经说过上采样的
+	模拟信号${x_a}(t)$经过模拟滤波器组以后，需要进行采样。然后紧挨的是非线性误差模块$f_m(x)$以及上采样模块。因为$f_m(x)$是无记忆且非线性的函数，所以加上非线性误差和采样的顺序无关紧要。如图\ref{pics/chapter2/changeOrder}所示。
 	
 	 %==================pic====================
 		\pic[htpb]{加非线性误差和采样模块的顺序可以更改}{}{pics/chapter2/changeOrder}
@@ -474,12 +473,88 @@ Y\left( {{e^{j\Omega {T_s}}}} \right) = \sum\limits_{m = 0}^{M - 1} {{Y_m}\left(
 			
 		其中,
 			\begin{equation}
-				{T_{p,k}}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}}} \left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right. \times {G_m}\left( {{e^{j\Omega {T_s}}}} \right)
+				{T_{p,k}}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}}} \left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right. \times {G_m}\left( {{e^{j\Omega {T_s}}}} \right)\label{eq:TpkFrame}
 			\end{equation}
+	
+	如图\ref{pics/chapter2/analogChannelModel}所示为TIADC第m个通道的模型，此模型中包含了模拟输入行为级表达式、孔径延迟、偏置、增益和非线性失配误差，但是没有考虑量化误差以及时钟抖动的影响。下面分别对这几种误差进行简单的分析:
+	\pic[htpb]{TIADC第m个通道的模型}{}{pics/chapter2/analogChannelModel}
+		\begin{enumerate}
+			\item 输入信号的行为级表达式。\par
+				每个通道的输入信号的行为级表达式由采样-保持电路的保持状态决定。如果不考虑采样-保持阶段的非线性作用，我们可以用${P_m(j\Omega )}$来描述其频率响应。
+			\item 孔径延迟$\theta _m$。\par
+				所谓的孔径延迟指的是时钟信号触发采样的时间和实际真正开始采样的时间之间的差值，也就是说孔径延迟是指在保持命令发出之后到ADC采样保持放大器(SHA)完全打开采样开关所需的时间。
+			\item 非线性误差：包含了增益、偏置以及非线性失配误差等等。
+		\end{enumerate}
+	
+	基于以上的分析，下面将依次分析\ref{eq:YwithError}中所有模块具体的框图。\par
+	
+		\begin{itemize}
+			\item 延迟滤波器${H_m}(j\Omega )$：
+				\begin{equation}
+					{H_m}\left( {j\Omega } \right) = {P_m}\left( {j\Omega } \right){e^{ - j\Omega {\theta _m}}}{e^{j\Omega {T_s}m}} \label{eq:delayFilter}
+				\end{equation}
 		
+		在式\ref{eq:delayFilter}中，我们可以看到我们加入了孔径延迟和时间偏移${T_s}m$。这是TIADC系统的一种等效模型，因为如果在时钟路径上有一点的超前其实就相当于在信号路径上有一点延迟，它们是等价的关系。
 		
+			\item 合路滤波器$G_m(e^{j\Omega T_s})$:
+				\begin{equation}
+					G_m(e^{j\Omega T_s})=e^{-j\Omega m} | _{\omega =\Omega T_s} = e^{-j\Omega T_s m}\label{eq:synthesisFilter}
+				\end{equation}
+		\end{itemize}
+		将式\ref{eq:delayFilter}和式\ref{eq:synthesisFilter}带入\ref{eq:TpkFrame}中
+		可以得到:
+		 %==================equation====================
+		 \begin{equation}
+			T{ _{p,k}}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}} \times {{\left( {{X_a}\left( {j\Omega } \right){P_m}\left( {j\Omega } \right){e^{ - j\Omega {\theta _m}}}{e^{j\Omega {T_s}m}}} \right)}^{\left( {*k} \right)}}} \left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right. \times {e^{ - j\Omega {T_s}m}} \label{eq:TpkPm}
+		\end{equation}
 		
+		将输入函数${P_m)(j\Omega )}$分为幅度和相位两部分，即
+		 %==================equation====================
+		 \begin{equation}
+			{P_m}\left( {j\Omega } \right) = {A_m}\left( \Omega  \right){e^{ - j{\tau _m}\Omega }}{e^{j{\phi _m}\left( \Omega  \right)}}
+		\end{equation}
 		
+		其中${e^{ - j{\tau _m}\Omega }}$是相位响应的线性部分，${e^{j{\phi _m}\left( \Omega  \right)}}$是相位响应的非线性部分。然后把\ref{eq:TpkPm}中所有的在卷积中的线性部分都提出来，重新写作：
+		 %==================equation====================
+		 \begin{equation}
+			{T_{p,k}}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}}{{\left( {{X_a}\left( {j\Omega } \right){A_m}\left( \Omega  \right){e^{j{\phi _m}\left( \Omega  \right)}}} \right)}^{\left( {*k} \right)}}\left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right. \times {e^{ - j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)\left( {{\theta _m} + {\tau _m}} \right)}}{e^{ - jpm\frac{{2\pi }}{M}}}}  \label{eq:TpkRewrite}
+		\end{equation}
+		
+		可以把$\theta $和$\tau $写成平均值加上偏差的形式，即${\theta _m} = {\theta _R} + \Delta {\theta _m},{\tau _m} = {\tau _R} + \Delta {\tau _m}$。
+		代入\ref{eq:TpkRewrite}中可以得到
+		 %==================equation====================
+		 \begin{equation}
+			\begin{array}{ccccc}
+			{T_{p,k}}\left( {j\Omega } \right) = \frac{1}{M}{e^{ - j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)\left( {{\theta _R} + {\tau _R}} \right)}}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}}} {\left( {{X_a}\left( {j\Omega } \right){A_m}\left( \Omega  \right){e^{j{\phi _m}\left( \Omega  \right)}}} \right)^{\left( {*k} \right)}}\left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right.\\
+			\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\, \times {e^{ - j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)\Delta {t_m}}}{e^{ - jpm\frac{{2\pi }}{M}}}
+			\end{array}\label{eq:TpkWithTiming}
+		\end{equation}
+		
+		式\ref{eq:TpkWithTiming}中包含了全局的线性移位${e^{ - j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)\left( {{\theta _R} + {\tau _R}} \right)}}$，而且它与m和k独立。这个全局的线性相移只会造成延迟而不会引入更多地杂散分量，也即它满足完美重构的特性。因此我们可以不再考虑这个线性相移，可以把它移出表达式以简化式子。\par
+		为了体现上述包含非线性误差的模型和偏置、增益、时钟失配误差的关系，我们将进行如下的讨论。\par
+		从式\ref{eq:y_m}可以看出$o_m$、$g_m$分别表示偏置、增益失配误差。
+		可以看出其实多项式$c_k$的第0阶和第1阶就是偏置误差和增益失配误差。所以可以重写式\ref{eq:TpkWithTiming}和\ref{eq:YwithError}:
+		 %==================equation====================
+		 \begin{equation}
+			Y\left( {{e^{j\Omega {T_s}}}} \right) = \frac{1}{{{T_s}}}\sum\limits_{p =  - \infty }^\infty  {\left[ {{\beta _p}2\pi \delta \left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right) + {\alpha _p}\left( {j\Omega } \right){X_a}\left( {j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)} \right) + \sum\limits_{k = 2}^{K - 1} {{T_{p,k}}\left( {j\Omega } \right)} } \right]} 
+		\end{equation}
+		其中
+		\begin{equation}
+			{\beta _p} = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{o_m}{e^{ - jpm\frac{{2\pi }}{M}}}} 
+		\end{equation}
+		
+		\begin{equation}
+			{\alpha _p}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{g_m}{A_m}\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right) \times {e^{ - j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)\Delta {t_m}}}{e^{j{\phi _m}\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}}{e^{ - jpm\frac{{2\pi }}{M}}}} 
+		\end{equation}
+		
+		\begin{equation}
+			{T_{p,k}}\left( {j\Omega } \right) = \frac{1}{M}\sum\limits_{m = 0}^{M - 1} {{c_{k,m}}{{\left( {{X_a}\left( {j\Omega } \right){A_m}\left( \Omega  \right){e^{j{\phi _m}\left( \Omega  \right)}}} \right)}^{\left( {*k} \right)}}\left| {_{j\Omega  = j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)}} \right. \times {e^{ - j\left( {\Omega  - p\frac{{{\Omega _s}}}{M}} \right)\Delta {t_m}}}{e^{ - jpm\frac{{2\pi }}{M}}}} 
+		\end{equation}
+		
+	\subsection{TIADC失配误差分析}
+		理论上
+		
+			
 	
 	
 	
